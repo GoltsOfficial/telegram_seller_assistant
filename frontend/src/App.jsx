@@ -13,9 +13,10 @@ function App() {
       plan: planName,
       months: months,
       price: price,
-      user_id: WebApp.initDataUnsafe.user?.id,
+      user_id: WebApp.initDataUnsafe.user?.id || 'unknown',
     };
 
+    console.log('Отправка данных:', data);
     WebApp.sendData(JSON.stringify(data));
   };
 
