@@ -1,21 +1,22 @@
 import os
+import json
+import asyncio
 from dotenv import load_dotenv
 from aiogram import Bot, Dispatcher, types, Router
 from aiogram.filters import Command
 
-# Загружаем переменные окружения из файла .env (где будет лежать BOT_TOKEN)
 load_dotenv()
 
-# Создаем роутер
 router = Router()
+bot = Bot(token=os.getenv("BOT_TOKEN"))
+dp = Dispatcher()
+dp.include_router(router)
 
 
-# Обработчик команды /start
 @router.message(Command("start"))
 async def cmd_start(message: types.Message):
-    # Текст с ссылкой на ваше мини-приложение
-    # ВАЖНО: Замените "your_mini_app_url" на реальный URL вашего приложения после деплоя
-    web_app_url = "https://your_mini_app_url.com"
+    # ЗАМЕНИТЕ на ваш реальный URL после деплоя GitHub Pages
+    web_app_url = "https://goltsofficial.github.io/telegram_seller_assistant/"
     web_app = types.WebAppInfo(url=web_app_url)
 
     keyboard = types.ReplyKeyboardMarkup(
@@ -32,34 +33,42 @@ async def cmd_start(message: types.Message):
     )
 
 
-# Обработчик команды /help
 @router.message(Command("help"))
 async def cmd_help(message: types.Message):
     help_text = (
         "Список команд:\n"
         "/start - Начать работу с ботом и открыть меню заказа.\n"
         "/help - Получить справку.\n\n"
-        "Если у вас возникли проблемы с доступом к мини-приложению, свяжитесь с поддержкой."
+        "Если у вас возникли проблемы, свяжитесь с поддержкой."
     )
     await message.answer(help_text)
 
 
-# Главная функция
+# Обработчик данных из мини-приложения
+@router.message(lambda message: message.web_app_data)
+async def handle_web_app_data(message: types.Message):
+    try:
+        data = json.loads(message.web_app_data.data)
+        plan = data.get('plan')
+        months = data.get('months')
+        user_id = data.get('user_id')
+
+        # Здесь можно сохранить заказ в базу данных
+        response_text = (f"✅ Спасибо за заказ!\n\n"
+                         f"Тариф: {plan}\n"
+                         f"Срок: {months} месяцев\n\n"
+                         f"С вами свяжутся для уточнения деталей.")
+
+        await message.answer(response_text)
+
+    except Exception as e:
+        print(f"Ошибка при обработке данных: {e}")
+        await message.answer("❌ Произошла ошибка при обработке заказа.")
+
+
 async def main():
-    # Получаем токен бота из переменных окружения
-    bot_token = os.getenv("BOT_TOKEN")
-    if not bot_token:
-        raise ValueError("Не задан BOT_TOKEN в переменных окружения.")
-
-    bot = Bot(token=bot_token)
-    dp = Dispatcher()
-    dp.include_router(router)
-
-    # Запускаем поллинг
     await dp.start_polling(bot)
 
 
 if __name__ == "__main__":
-    import asyncio
-
     asyncio.run(main())

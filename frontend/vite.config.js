@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/telegram_seller_assistant/', // ЗАМЕНИТЕ на название вашего репозитория
+  base: '/goltsofficial-telegram_seller_assistant/', // ПРОВЕРЬТЕ точное название репозитория
   build: {
     outDir: 'dist',
     emptyOutDir: true
